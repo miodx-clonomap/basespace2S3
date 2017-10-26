@@ -2,6 +2,8 @@ name          := "basespace2S3"
 organization  := "era7bio"
 description   := "basespace2S3 project"
 
+scalaVersion  := "2.11.8"
+
 bucketSuffix  := "era7.com"
 
 libraryDependencies ++= Seq()
