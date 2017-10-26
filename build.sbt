@@ -6,7 +6,10 @@ scalaVersion  := "2.11.8"
 
 bucketSuffix  := "era7.com"
 
-libraryDependencies ++= Seq()
+libraryDependencies ++= Seq(
+  "ohnosequences" %% "loquat" % "2.0.0-RC4"
+)
+
 
 // For resolving dependencies version conflicts:
 // dependencyOverrides ++= Set()
