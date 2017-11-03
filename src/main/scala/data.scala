@@ -8,7 +8,6 @@ import ohnosequences.cosas._, types._, records._
 
 case object data {
 
-  case object token             extends Data("token")
   case object basespaceFileURL  extends Data("file-url")
   case object basespaceFileS3   extends Data("file-s3")
   case object notifyTo          extends Data("notify-url")
@@ -17,7 +16,6 @@ case object data {
   case object sizeKB            extends Data("sizeKB")
 
   case object input   extends DataSet(
-    token             :×:
     basespaceFileURL  :×:
     basespaceFileS3   :×:
     notifyTo          :×:

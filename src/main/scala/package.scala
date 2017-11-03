@@ -15,9 +15,6 @@ package object basespace2s3 {
   type Token =
     String
 
-  type BasespaceAPI =
-    Token
-
   // TODO maybe (String,String) so that ("md5", "dfda43ad6m3na...")
   type Checksum =
     String
