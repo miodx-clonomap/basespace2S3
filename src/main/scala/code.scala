@@ -4,18 +4,52 @@ import ohnosequences.loquat._
 import ohnosequences.statika._
 import ohnosequences.cosas._, types._, klists._
 import ohnosequences.datasets._
+import play.api.libs.ws._
+import play.api.libs.ws.ahc._
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
+import java.nio.file.Files.newOutputStream
 
 // awful name
 case object code {
 
-  // TODO implement, add API client whatever
-  // should return the same file in CheckedFile if OK
+  // TODO: Compute checksum (md5, whatever)
+  val checkFile:
+    File => CheckedFile =
+      ???
+
+  val openStream:
+    File => FileStream =
+      file => (file, newOutputStream(file.toPath))
+
   val downloadTo:
-    BasespaceAPI  =>
-    File          =>
-    BasespaceURL  =>
-    BasespaceError + CheckedFile =
-    ???
+    WSClient     =>
+    BasespaceURL =>
+    FileStream   =>
+    (WSClient, FileStream, Future[BasespaceError + File]) =
+      ws => url => fileStream =>
+        (
+          ws,
+          fileStream,
+          ws.url(url).withMethod("GET").stream() flatMap {
+            response =>
+              implicit val system = ActorSystem()
+              implicit val materializer = ActorMaterializer()
+              response.body.runWith(
+                Sink.foreach[akka.util.ByteString] { bytes =>
+                  fileStream._2.write(bytes.toArray)
+                }
+              ) map {
+                _ => Right[BasespaceError, File](fileStream._1)
+              } recoverWith {
+                case e => Left[BasespaceError, File](BasespaceError(e.toString))
+              }
+          }
+        )
 
   // TODO implement, add S3 API client as arg etc
   val uploadTo:
@@ -44,9 +78,6 @@ case object code {
     def process(context: ProcessingContext[Input])
       : AnyInstructions { type Out <: OutputFiles } = {
 
-      val token =
-        readFile( context inputFile data.token )
-
       val fileURL =
         readFile( context inputFile data.basespaceFileURL )
 
@@ -62,13 +93,9 @@ case object code {
       new SimpleInstructions[*[AnyDenotation { type Value <: FileResource }]](
         { f: File =>
 
-          // TODO should be something real
-          val basespaceAPI =
-            token
-
-          downloadTo(basespaceAPI)(outFile)(fileURL) match {
-            case Left(basespaceErr) => Failure(basespaceErr.toString)
-            case Right(checkedFile) =>
+          downloadTo(fileURL)(outFile) match {
+            case Left(BasespaceError(err)) => Failure(err)
+            case Right(checkedFile)        =>
               uploadTo(checkedFile)(fileS3) match {
                 case Left(s3Err)        => Failure(s3Err.toString)
                 case Right(checkS3Obj)  =>

@@ -1,5 +1,9 @@
 package era7bio
 
+package basespace2s3 {
+  case class BasespaceError(val error: String)
+}
+
 package object basespace2s3 {
 
   // TODO ...
@@ -22,6 +26,9 @@ package object basespace2s3 {
   type File =
     java.io.File
 
+  type FileStream =
+    (File, java.io.OutputStream)
+
   def readFile: File => String =
     file =>
       new String( java.nio.file.Files readAllBytes file.toPath )
@@ -38,7 +45,6 @@ package object basespace2s3 {
 
 
   // TODO set it
-  type BasespaceError
   type S3Error
   type NotifyError
 
