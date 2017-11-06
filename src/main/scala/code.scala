@@ -13,6 +13,7 @@ import akka.stream.scaladsl.Sink
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 import java.nio.file.Files.newOutputStream
 import com.amazonaws.services.s3.AmazonS3
 
@@ -69,27 +70,26 @@ case object code {
           Duration.Inf
         )
 
-  // TODO implement, add S3 API client as arg etc
+  // TODO Add checksum as metadata
   val uploadTo:
-    s3.ScalaS3Client =>
-    CheckedFile      =>
-    S3Object         =>
+    AmazonS3    =>
+    CheckedFile =>
+    S3Object    =>
     S3Error + CheckedS3Object =
       s3Client => checkedFile => s3Object =>
         {
           val (file, checksum) = checkedFile
+          val (bucket, key) = s3Object
 
-          s3Client withTransferManager { tm =>
-            tm.upload(
-              file         = file,
-              s3Address    = s3Object,
-              userMetadata = Map(
-                "md5" -> checksum
-              )
-            ) match {
-              case Success(s) => Right((s, checksum))
-              case Failure(e) => Left(S3Error)
-            }
+          Try {
+            s3Client.putObject(
+              bucket,
+              key,
+              file
+            )
+          } match {
+            case scala.util.Success(s) => Right((s3Object, checksum))
+            case scala.util.Failure(e) => Left(S3Error(e.toString))
           }
         }
 
@@ -116,8 +116,11 @@ case object code {
       val fileURL =
         readFile( context inputFile data.basespaceFileURL )
 
-      val fileS3 =
-        readFile( context inputFile data.basespaceFileS3 )
+      val fileS3Bucket =
+        readFile( context inputFile data.basespaceFileS3Bucket )
+
+      val fileS3Key =
+        readFile( context inputFile data.basespaceFileS3Key )
 
       val notifyURL =
         readFile( context inputFile data.notifyTo )
@@ -130,6 +133,8 @@ case object code {
 
           val ws         = AhcWSClient()
           val fileStream = openStream(outFile)
+          val s3Client   = s3.defaultClient
+          val s3Object   = (fileS3Bucket, fileS3Key)
 
           downloadTo(ws)(fileURL)(fileStream) match {
             case Left(BasespaceError(err)) =>
@@ -137,7 +142,7 @@ case object code {
               Failure(err)
             case Right(checkedFile)        =>
               closeResources(ws)(fileStream)
-              uploadTo(checkedFile)(fileS3) match {
+              uploadTo(s3Client)(checkedFile)(s3Object) match {
                 case Left(s3Err)        => Failure(s3Err.toString)
                 case Right(checkS3Obj)  =>
                   notifyTo(checkS3Obj)(notifyURL) match {

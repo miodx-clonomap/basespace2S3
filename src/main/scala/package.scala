@@ -1,7 +1,8 @@
 package era7bio
 
 package basespace2s3 {
-  case class BasespaceError(val error: String)
+  case class BasespaceError ( val error: String )
+  case class S3Error        ( val error: String )
 }
 
 package object basespace2s3 {
@@ -36,16 +37,15 @@ package object basespace2s3 {
   type CheckedFile =
     (File, Checksum)
 
-  // TODO set it to aws-scala-tools whatever
+  // (bucket, key)
   type S3Object =
-    String
+    (String, String)
 
   type CheckedS3Object =
     (S3Object, Checksum)
 
 
   // TODO set it
-  type S3Error
   type NotifyError
 
   type +[X,Y] =
