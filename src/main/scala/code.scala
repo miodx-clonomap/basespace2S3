@@ -4,6 +4,7 @@ import ohnosequences.loquat._
 import ohnosequences.statika._
 import ohnosequences.cosas._, types._, klists._
 import ohnosequences.datasets._
+import ohnosequences.awstools.s3
 import play.api.libs.ws._
 import play.api.libs.ws.ahc._
 import akka.actor.ActorSystem
@@ -13,6 +14,7 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.nio.file.Files.newOutputStream
+import com.amazonaws.services.s3.AmazonS3
 
 // awful name
 case object code {
@@ -69,10 +71,27 @@ case object code {
 
   // TODO implement, add S3 API client as arg etc
   val uploadTo:
-    CheckedFile =>
-    S3Object    =>
+    s3.ScalaS3Client =>
+    CheckedFile      =>
+    S3Object         =>
     S3Error + CheckedS3Object =
-    ???
+      s3Client => checkedFile => s3Object =>
+        {
+          val (file, checksum) = checkedFile
+
+          s3Client withTransferManager { tm =>
+            tm.upload(
+              file         = file,
+              s3Address    = s3Object,
+              userMetadata = Map(
+                "md5" -> checksum
+              )
+            ) match {
+              case Success(s) => Right((s, checksum))
+              case Failure(e) => Left(S3Error)
+            }
+          }
+        }
 
   // TODO add any params here (file, checksum, IDs, ...)
   val notifyTo:

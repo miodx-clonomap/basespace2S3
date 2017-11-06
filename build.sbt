@@ -7,8 +7,9 @@ scalaVersion  := "2.11.8"
 bucketSuffix  := "era7.com"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-ws"    % "2.5.12",
-  "ohnosequences"     %% "loquat"     % "2.0.0-RC4"
+  "com.typesafe.play" %% "play-ws"         % "2.5.12",
+  "ohnosequences"     %% "loquat"          % "2.0.0-RC4",
+  "ohnosequences"     %% "aws-scala-tools" % "0.19.0"
 )
 
 dependencyOverrides ++= Seq(
