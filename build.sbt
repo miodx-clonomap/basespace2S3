@@ -22,7 +22,7 @@ dependencyOverrides ++= Seq(
 )
 
 // Uncomment if you need to deploy this project as a Statika bundle:
-// generateStatikaMetadataIn(Compile)
+generateStatikaMetadataIn(Compile)
 
 // Uncomment if you have release-only tests using the assembled fat-jar:
 // fullClasspath in assembly := (fullClasspath in Test).value
