@@ -3,6 +3,7 @@ package era7bio
 package basespace2s3 {
   case class BasespaceError ( val error: String )
   case class S3Error        ( val error: String )
+  case class NotifyError    ( val error: String )
 }
 
 package object basespace2s3 {
@@ -43,10 +44,6 @@ package object basespace2s3 {
 
   type CheckedS3Object =
     (S3Object, Checksum)
-
-
-  // TODO set it
-  type NotifyError
 
   type +[X,Y] =
      Either[X,Y]

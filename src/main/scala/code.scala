@@ -14,7 +14,7 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
-import java.nio.file.Files.newOutputStream
+import java.nio.file.Files.{ newInputStream, newOutputStream }
 import com.amazonaws.services.s3.AmazonS3
 
 // awful name
@@ -26,7 +26,13 @@ case object code {
   // TODO: Compute checksum (md5, whatever)
   val checkFile:
     File => CheckedFile =
-      ???
+      file => {
+        val stream = newInputStream(file.toPath)
+        val md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(stream)
+        stream.close()
+
+        (file, md5)
+      }
 
   val openStream:
     File => FileStream =
@@ -36,12 +42,11 @@ case object code {
     WSClient   =>
     FileStream =>
     Unit =
-      ws => fileStream =>
-        {
-          ws.close()
-          system.terminate()
-          fileStream._2.close()
-        }
+      ws => fileStream => {
+        ws.close()
+        system.terminate()
+        fileStream._2.close()
+      }
 
   val downloadTo:
     WSClient     =>
@@ -76,22 +81,21 @@ case object code {
     CheckedFile =>
     S3Object    =>
     S3Error + CheckedS3Object =
-      s3Client => checkedFile => s3Object =>
-        {
-          val (file, checksum) = checkedFile
-          val (bucket, key) = s3Object
+      s3Client => checkedFile => s3Object => {
+        val (file, checksum) = checkedFile
+        val (bucket, key) = s3Object
 
-          Try {
-            s3Client.putObject(
-              bucket,
-              key,
-              file
-            )
-          } match {
-            case scala.util.Success(s) => Right((s3Object, checksum))
-            case scala.util.Failure(e) => Left(S3Error(e.toString))
-          }
+        Try {
+          s3Client.putObject(
+            bucket,
+            key,
+            file
+          )
+        } match {
+          case scala.util.Success(s) => Right((s3Object, checksum))
+          case scala.util.Failure(e) => Left(S3Error(e.toString))
         }
+      }
 
   // TODO add any params here (file, checksum, IDs, ...)
   val notifyTo:
