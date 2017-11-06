@@ -17,6 +17,9 @@ import java.nio.file.Files.newOutputStream
 // awful name
 case object code {
 
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
   // TODO: Compute checksum (md5, whatever)
   val checkFile:
     File => CheckedFile =
@@ -26,29 +29,38 @@ case object code {
     File => FileStream =
       file => (file, newOutputStream(file.toPath))
 
+  val closeStream:
+    FileStream => File =
+      fileStream => {
+        fileStream._2.close()
+        fileStream._1
+      }
+
   val downloadTo:
     WSClient     =>
     BasespaceURL =>
     FileStream   =>
-    (WSClient, FileStream, Future[BasespaceError + File]) =
+    BasespaceError + CheckedFile =
       ws => url => fileStream =>
-        (
-          ws,
-          fileStream,
+        Await.result(
           ws.url(url).withMethod("GET").stream() flatMap {
             response =>
-              implicit val system = ActorSystem()
-              implicit val materializer = ActorMaterializer()
+
               response.body.runWith(
                 Sink.foreach[akka.util.ByteString] { bytes =>
                   fileStream._2.write(bytes.toArray)
                 }
               ) map {
-                _ => Right[BasespaceError, File](fileStream._1)
+                _ => Right[BasespaceError, CheckedFile](
+                  checkFile(fileStream._1)
+                )
               } recoverWith {
-                case e => Left[BasespaceError, File](BasespaceError(e.toString))
+                case e => Future {
+                  Left[BasespaceError, CheckedFile](BasespaceError(e.toString))
+                }
               }
-          }
+          },
+          Duration.Inf
         )
 
   // TODO implement, add S3 API client as arg etc
@@ -93,7 +105,10 @@ case object code {
       new SimpleInstructions[*[AnyDenotation { type Value <: FileResource }]](
         { f: File =>
 
-          downloadTo(fileURL)(outFile) match {
+          val ws         = AhcWSClient()
+          val fileStream = openStream(outFile)
+
+          downloadTo(ws)(fileURL)(fileStream) match {
             case Left(BasespaceError(err)) => Failure(err)
             case Right(checkedFile)        =>
               uploadTo(checkedFile)(fileS3) match {
