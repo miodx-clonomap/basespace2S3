@@ -73,4 +73,18 @@ class Basespace2s3Test extends FunSuite {
         assert( s3.ScalaS3Client(s3Client).objectExists(obj) )
     }
   }
+
+  test("Upload a file to an unknown bucket") {
+    val s3Client = s3.defaultClient
+    val s3Object = s3.S3Object(
+      "anInventedBucketIShouldNotBeAbleToAcces",
+      s"random-${System.currentTimeMillis.toString}.txt"
+    )
+
+    print(s3Object.toString)
+
+    val uploadResult = uploadTo(s3Client)(testCheckedFile)(s3Object)
+
+    uploadResult should be ('left)
+  }
 }
