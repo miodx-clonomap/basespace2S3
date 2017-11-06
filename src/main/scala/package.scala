@@ -40,7 +40,7 @@ package object basespace2s3 {
 
   // (bucket, key)
   type S3Object =
-    (String, String)
+    ohnosequences.awstools.s3.S3Object
 
   type CheckedS3Object =
     (S3Object, Checksum)

@@ -83,12 +83,11 @@ case object code {
     S3Error + CheckedS3Object =
       s3Client => checkedFile => s3Object => {
         val (file, checksum) = checkedFile
-        val (bucket, key) = s3Object
 
         Try {
           s3Client.putObject(
-            bucket,
-            key,
+            s3Object.bucket,
+            s3Object.key,
             file
           )
         } match {
@@ -138,7 +137,7 @@ case object code {
           val ws         = AhcWSClient()
           val fileStream = openStream(outFile)
           val s3Client   = s3.defaultClient
-          val s3Object   = (fileS3Bucket, fileS3Key)
+          val s3Object   = s3.S3Object(fileS3Bucket, fileS3Key)
 
           downloadTo(ws)(fileURL)(fileStream) match {
             case Left(BasespaceError(err)) =>

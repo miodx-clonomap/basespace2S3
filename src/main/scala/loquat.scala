@@ -42,8 +42,8 @@ object loquat {
       DataMapping("who-knows", code.run)(
         remoteInput = Map[AnyData, AnyRemoteResource](
           basespaceFileURL      -> MessageResource(url)       ,
-          basespaceFileS3Bucket -> MessageResource(s3obj._1)  ,
-          basespaceFileS3Key    -> MessageResource(s3obj._2)  ,
+          basespaceFileS3Bucket -> MessageResource(s3obj.bucket)  ,
+          basespaceFileS3Key    -> MessageResource(s3obj.key)  ,
           notifyTo              -> MessageResource("TODO")
         ),
         remoteOutput = Map()
@@ -95,7 +95,7 @@ object loquat {
       metadata    = config.metadata
     )
     {
-      
+
       override lazy val fullName: String =
         "era7bio.basespace2s3.loquat.workerCompat"
     }
@@ -128,5 +128,5 @@ object loquat {
         ),
       keypairName       = "miodx-dev"
     )
-  
+
 }
