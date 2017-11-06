@@ -29,12 +29,16 @@ case object code {
     File => FileStream =
       file => (file, newOutputStream(file.toPath))
 
-  val closeStream:
-    FileStream => File =
-      fileStream => {
-        fileStream._2.close()
-        fileStream._1
-      }
+  val closeResources:
+    WSClient   =>
+    FileStream =>
+    Unit =
+      ws => fileStream =>
+        {
+          ws.close()
+          system.terminate()
+          fileStream._2.close()
+        }
 
   val downloadTo:
     WSClient     =>
@@ -109,8 +113,11 @@ case object code {
           val fileStream = openStream(outFile)
 
           downloadTo(ws)(fileURL)(fileStream) match {
-            case Left(BasespaceError(err)) => Failure(err)
+            case Left(BasespaceError(err)) =>
+              closeResources(ws)(fileStream)
+              Failure(err)
             case Right(checkedFile)        =>
+              closeResources(ws)(fileStream)
               uploadTo(checkedFile)(fileS3) match {
                 case Left(s3Err)        => Failure(s3Err.toString)
                 case Right(checkS3Obj)  =>
