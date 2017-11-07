@@ -14,9 +14,25 @@ object loquat {
   type Argh =
     scala.util.Try[java.util.concurrent.ScheduledFuture[_]]
 
-  val run: String => List[(BasespaceURL, S3Object)] => Argh =
+  type ID =
+    String
+
+  type Name =
+    String
+
+  // TODO: Decide a sensible way of computing the key for a given file
+  val output: ((ID, Name, BasespaceURL)) => S3Object = {
+    case (id, name, url) =>
+      val bucket = "test.era7"
+      val key    = s"$name-$id-${System.currentTimeMillis()}"
+
+      S3Object(bucket, key)
+  }
+
+
+  val run: String => List[(ID, Name, BasespaceURL)] => List[S3Object] =
     prefix => seq => {
-    
+
       val dm =
         dataMapping(prefix)(seq)
 
@@ -28,6 +44,8 @@ object loquat {
         manager             = managerBundle(dm) ,
         monitoringInterval  = 30.second
       )
+
+      seq map output
     }
 
   val defaultAMI =
@@ -37,20 +55,21 @@ object loquat {
     era7bio.generated.metadata.basespace2S3
 
   val dataMapping:
-    String => List[(BasespaceURL, S3Object)] => List[DataMapping[code.run.type]] =
+    String => List[(ID, Name, BasespaceURL)] => List[DataMapping[code.run.type]] =
       prefix => seq =>
         seq map {
-          case (url, s3obj) =>
+          case (id, name, url) =>
+            val s3obj = output((id, name, url))
             DataMapping(prefix, code.run)(
               remoteInput = Map[AnyData, AnyRemoteResource](
                 basespaceFileURL      -> MessageResource(url)       ,
                 basespaceFileS3Bucket -> MessageResource(s3obj.bucket)  ,
-                basespaceFileS3Key    -> MessageResource(s3obj.key)  
+                basespaceFileS3Key    -> MessageResource(s3obj.key)
               ),
               remoteOutput = Map()
             )
         }
-      
+
   // Loquat conf
 
   case object config extends AnyLoquatConfig {
