@@ -14,41 +14,45 @@ object loquat {
   type Argh =
     scala.util.Try[java.util.concurrent.ScheduledFuture[_]]
 
-  def run: BasespaceURL => S3Object => Argh =
-    url => s3obj => {
-
+  val run: String => List[(BasespaceURL, S3Object)] => Argh =
+    prefix => seq => {
+    
       val dm =
-        dataMapping(url)(s3obj)
+        dataMapping(prefix)(seq)
 
       awful.launcher.run(
         config              = loquat.config     ,
         user                = me                ,
         dataProcessing      = code.run          ,
-        dataMappings        = List(dm)          ,
+        dataMappings        = dm                ,
         manager             = managerBundle(dm) ,
-        monitoringInterval  = 1.minute
+        monitoringInterval  = 30.second
       )
     }
 
-  def defaultAMI =
+  val defaultAMI =
       AmazonLinuxAMI(Ireland, HVM, InstanceStore)
 
-  def metadata =
+  val metadata =
     era7bio.generated.metadata.basespace2S3
 
-  def dataMapping:
-    BasespaceURL => S3Object => DataMapping[code.run.type] =
-    url => s3obj =>
-      DataMapping("who-knows", code.run)(
-        remoteInput = Map[AnyData, AnyRemoteResource](
-          basespaceFileURL      -> MessageResource(url)       ,
-          basespaceFileS3Bucket -> MessageResource(s3obj.bucket)  ,
-          basespaceFileS3Key    -> MessageResource(s3obj.key)  
-        ),
-        remoteOutput = Map()
-      )
-
+  val dataMapping:
+    String => List[(BasespaceURL, S3Object)] => List[DataMapping[code.run.type]] =
+      prefix => seq =>
+        seq map {
+          case (url, s3obj) =>
+            DataMapping(prefix, code.run)(
+              remoteInput = Map[AnyData, AnyRemoteResource](
+                basespaceFileURL      -> MessageResource(url)       ,
+                basespaceFileS3Bucket -> MessageResource(s3obj.bucket)  ,
+                basespaceFileS3Key    -> MessageResource(s3obj.key)  
+              ),
+              remoteOutput = Map()
+            )
+        }
+      
   // Loquat conf
+
   case object config extends AnyLoquatConfig {
 
     val loquatName =
@@ -108,9 +112,9 @@ object loquat {
         PurchaseModel.spot(0.1)
       )
 
-  val managerBundle: DataMapping[code.run.type] => AnyManagerBundle =
+  val managerBundle: List[DataMapping[code.run.type]] => AnyManagerBundle =
     dm =>
-      new ManagerBundle(worker)(List(dm)) {
+      new ManagerBundle(worker)(dm) {
 
         val fullName: String =
           "era7bio.basespace2s3.loquat"
