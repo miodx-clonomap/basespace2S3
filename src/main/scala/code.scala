@@ -20,8 +20,8 @@ import com.amazonaws.services.s3.AmazonS3
 // awful name
 case object code {
 
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  implicit lazy val system = ActorSystem()
+  implicit lazy val materializer = ActorMaterializer()
 
   // TODO: Compute checksum (md5, whatever)
   val checkFile:
@@ -44,7 +44,7 @@ case object code {
     Unit =
       ws => fileStream => {
         ws.close()
-        system.terminate()
+        // system.terminate()
         fileStream._2.close()
       }
 
