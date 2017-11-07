@@ -97,7 +97,7 @@ case object code {
       }
 
   // TODO add any params here (file, checksum, IDs, ...)
-  val notifyTo:
+  def notifyTo:
     CheckedS3Object =>
     URL             =>
     NotifyError + Reply =
@@ -125,9 +125,6 @@ case object code {
       val fileS3Key =
         readFile( context inputFile data.basespaceFileS3Key )
 
-      val notifyURL =
-        readFile( context inputFile data.notifyTo )
-
       val outFile =
         context / "basespaceFile"
 
@@ -148,14 +145,10 @@ case object code {
               uploadTo(s3Client)(checkedFile)(s3Object) match {
                 case Left(s3Err)        => Failure(s3Err.toString)
                 case Right(checkS3Obj)  =>
-                  notifyTo(checkS3Obj)(notifyURL) match {
-                    case Left(notifyErr)  => Failure(notifyErr.toString)
-                    case Right(reply)     =>
                       Success(
                         s"uploaded ${checkS3Obj._1} with checksum ${checkS3Obj._2}",
                         *[AnyDenotation { type Value <: FileResource }]
                       )
-                  }
               }
           }
         }

@@ -11,7 +11,7 @@ case object data {
   case object basespaceFileURL      extends Data("file-url")
   case object basespaceFileS3Bucket extends Data("file-s3-bucket")
   case object basespaceFileS3Key    extends Data("file-s3-key")
-  case object notifyTo              extends Data("notify-url")
+  // case object notifyTo              extends Data("notify-url")
   // TODO maybe outputs
   case object checksum              extends Data("checksum")
   case object sizeKB                extends Data("sizeKB")
@@ -20,7 +20,7 @@ case object data {
     basespaceFileURL      :×:
     basespaceFileS3Bucket :×:
     basespaceFileS3Key    :×:
-    notifyTo              :×:
+    // notifyTo              :×:
     |[AnyData]
   )
 

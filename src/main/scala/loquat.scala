@@ -14,7 +14,7 @@ object loquat {
   type Argh =
     scala.util.Try[java.util.concurrent.ScheduledFuture[_]]
 
-  def run: BasespaceURL => S3Object => Argh  =
+  def run: BasespaceURL => S3Object => Argh =
     url => s3obj => {
 
       val dm =
@@ -43,8 +43,7 @@ object loquat {
         remoteInput = Map[AnyData, AnyRemoteResource](
           basespaceFileURL      -> MessageResource(url)       ,
           basespaceFileS3Bucket -> MessageResource(s3obj.bucket)  ,
-          basespaceFileS3Key    -> MessageResource(s3obj.key)  ,
-          notifyTo              -> MessageResource("TODO")
+          basespaceFileS3Key    -> MessageResource(s3obj.key)  
         ),
         remoteOutput = Map()
       )
