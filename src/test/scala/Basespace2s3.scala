@@ -26,8 +26,8 @@ class Basespace2s3Test extends FunSuite {
 
   // Random file in the internet with pre-computed MD5
   object checkedRemoteFile{
-    val url = "https://raw.githubusercontent.com/era7bio/webmiodx/master/docs/visualizations/TCRbeta_4_time_points_with_clonotype_data_V2.csv?token=ADvjT_iXya3DVPhLUWfr24LHVg3ttovUks5aCZNIwA%3D%3D"
-    val md5 = "1c408770485f3c9c4af65d4e41aab4b0"
+    val url = "https://raw.githubusercontent.com/era7bio/basespace2S3/master/src/test/resources/random.txt"
+    val md5 = "7b6da1fc59041fb6eaac76e7d9a6aa38"
   }
 
   test("Checksum a file") {
@@ -63,8 +63,6 @@ class Basespace2s3Test extends FunSuite {
       s"random-${System.currentTimeMillis.toString}.txt"
     )
 
-    print(s3Object.toString)
-
     val uploadResult = uploadTo(s3Client)(testCheckedFile)(s3Object)
 
     uploadResult match {
@@ -80,8 +78,6 @@ class Basespace2s3Test extends FunSuite {
       "anInventedBucketIShouldNotBeAbleToAcces",
       s"random-${System.currentTimeMillis.toString}.txt"
     )
-
-    print(s3Object.toString)
 
     val uploadResult = uploadTo(s3Client)(testCheckedFile)(s3Object)
 
