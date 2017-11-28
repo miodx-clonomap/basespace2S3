@@ -126,7 +126,7 @@ case object code {
         readFile( context inputFile data.basespaceFileS3Key )
 
       val outFile =
-        context / "basespaceFile"
+        context / fileS3Key
 
       new SimpleInstructions[*[AnyDenotation { type Value <: FileResource }]](
         { f: File =>
