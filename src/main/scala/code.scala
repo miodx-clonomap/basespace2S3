@@ -126,7 +126,7 @@ case object code {
         readFile( context inputFile data.basespaceFileS3Key )
 
       val outFile =
-        context / fileS3Key
+        context / fileS3Key.replaceAll("/", "_")
 
       new SimpleInstructions[*[AnyDenotation { type Value <: FileResource }]](
         { f: File =>
