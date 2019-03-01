@@ -1,10 +1,10 @@
-package era7bio.basespace2s3.test
+package ohnosequences.basespace2s3.test
 
 import org.scalatest._
 import Matchers._
 
-import era7bio.basespace2s3._
-import era7bio.basespace2s3.code._
+import ohnosequences.basespace2s3._
+import ohnosequences.basespace2s3.transfer._
 import ohnosequences.awstools.s3
 import play.api.libs.ws._
 import play.api.libs.ws.ahc._
@@ -26,7 +26,7 @@ class Basespace2s3Test extends FunSuite {
 
   // Random file in the internet with pre-computed MD5
   object checkedRemoteFile{
-    val url = "https://raw.githubusercontent.com/era7bio/basespace2S3/master/src/test/resources/random.txt"
+    val url = "https://raw.githubusercontent.com/ohnosequences/basespace2S3/master/src/test/resources/random.txt"
     val md5 = "7b6da1fc59041fb6eaac76e7d9a6aa38"
   }
 

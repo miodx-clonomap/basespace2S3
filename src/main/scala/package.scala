@@ -1,14 +1,12 @@
-package era7bio
+package ohnosequences
 
 package basespace2s3 {
   case class BasespaceError ( val error: String )
   case class S3Error        ( val error: String )
-  case class NotifyError    ( val error: String )
 }
 
 package object basespace2s3 {
 
-  // TODO ...
   type BasespaceURL =
     String
 
@@ -21,7 +19,6 @@ package object basespace2s3 {
   type Token =
     String
 
-  // TODO maybe (String,String) so that ("md5", "dfda43ad6m3na...")
   type Checksum =
     String
 
@@ -38,7 +35,6 @@ package object basespace2s3 {
   type CheckedFile =
     (File, Checksum)
 
-  // (bucket, key)
   type S3Object =
     ohnosequences.awstools.s3.S3Object
 
