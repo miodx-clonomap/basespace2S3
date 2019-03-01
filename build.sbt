@@ -1,5 +1,5 @@
 name          := "basespace2S3"
-organization  := "era7bio"
+organization  := "ohnosequences"
 description   := "basespace2S3 project"
 
 scalaVersion  := "2.11.8"

@@ -1,4 +1,4 @@
-package era7bio.basespace2s3
+package ohnosequences.basespace2s3
 
 import ohnosequences.loquat._
 import ohnosequences.statika._
@@ -17,13 +17,11 @@ import scala.util.Try
 import java.nio.file.Files.{ newInputStream, newOutputStream }
 import com.amazonaws.services.s3.AmazonS3
 
-// awful name
-case object code {
+case object transfer {
 
   implicit lazy val system = ActorSystem()
   implicit lazy val materializer = ActorMaterializer()
 
-  // TODO: Compute checksum (md5, whatever)
   val checkFile:
     File => CheckedFile =
       file => {
@@ -75,7 +73,6 @@ case object code {
           Duration.Inf
         )
 
-  // TODO Add checksum as metadata
   val uploadTo:
     AmazonS3    =>
     CheckedFile =>
@@ -96,14 +93,6 @@ case object code {
         }
       }
 
-  // TODO add any params here (file, checksum, IDs, ...)
-  def notifyTo:
-    CheckedS3Object =>
-    URL             =>
-    NotifyError + Reply =
-    ???
-
-  // TODO add conf here (if needed)
   case object run extends DataProcessingBundle()(
     input  = data.input,
     output = data.output
