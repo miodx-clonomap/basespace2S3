@@ -1,15 +1,16 @@
 name          := "basespace2S3"
-organization  := "ohnosequences"
+organization  := "com.miodx.clonomap"
+version       := "0.1.0"
 description   := "basespace2S3 project"
 
-scalaVersion  := "2.11.8"
+scalaVersion  := "2.11.11"
 
 bucketSuffix  := "era7.com"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-ws"         % "2.5.12",
-  "ohnosequences"     %% "loquat"          % "2.0.0-RC4",
-  "org.scalatest"     %% "scalatest"       % "3.0.4" % Test
+  "com.typesafe.play"  %% "play-ws"         % "2.5.12",
+  "com.miodx.clonomap" %% "loquat"          % "2.0.0",
+  "org.scalatest"      %% "scalatest"       % "3.0.5" % Test
 
 )
 
