@@ -53,7 +53,7 @@ object loquat {
    * configured generateStatikaMetadataIn(Compile)
    */
   val metadata =
-    com.miodx.clonomap.generated.metadata.basespace2S3
+    com.miodx.clonomap.generated.metadata.basespace2s3
 
   /**
    * Define the map between data resource and its associated content. In this
