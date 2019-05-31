@@ -1,4 +1,4 @@
-# basespace2S3
+# basespace2s3
 
 [![](http://img.shields.io/github/release/ohnosequences/basespace2S3/all.svg)](https://github.com/ohnosequences/basespace2S3/releases/latest)
 [![](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://tldrlegal.com/license/gnu-affero-general-public-license-v3-%28agpl-3.0%29)

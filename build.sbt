@@ -1,7 +1,7 @@
-name          := "basespace2S3"
+name          := "basespace2s3"
 organization  := "com.miodx.clonomap"
 version       := "0.1.0"
-description   := "basespace2S3 project"
+description   := "basespace2s3 project"
 
 scalaVersion  := "2.11.11"
 
