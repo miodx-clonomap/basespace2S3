@@ -3,13 +3,22 @@ package ohnosequences.basespace2s3
 import data._
 import ohnosequences.loquat._
 import ohnosequences.datasets._
-import ohnosequences.statika._, aws._
-import ohnosequences.awstools._, ec2._ , s3._, autoscaling._, regions._
+import ohnosequences.statika._
+import aws._
+import ohnosequences.awstools._
+import ec2._
+import s3._
+import autoscaling._
+import regions._
 import com.amazonaws.auth.profile._
 import com.amazonaws.auth._
+
 import scala.concurrent.duration._
 import scala.util.Try
 import java.util.concurrent.ScheduledFuture
+
+import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
 
 /**
  * Namespace wrapping all Loquat-related functions, as well as the Loquat
@@ -17,8 +26,9 @@ import java.util.concurrent.ScheduledFuture
  *
  * The most important method here is run, that triggers the whole process
  */
-object loquat {
+object loquat extends LazyLogging {
 
+  val globalConfig: Basespace2S3Config = Basespace2S3Config
   /**
    * Run the Loquat, given a dataMapping label and a list of pairs of files
    * URLs along with their expected S3 destiny
@@ -31,6 +41,7 @@ object loquat {
   val run: String => List[(BasespaceURL, S3Object)] => Try[ScheduledFuture[_]] =
     prefix => seq => {
 
+      logger.debug("loquat.run(" + prefix + ")(seq.len==" + seq.length.toString + ")")
       val dm =
         dataMapping(prefix)(seq)
 
@@ -53,7 +64,7 @@ object loquat {
    * configured generateStatikaMetadataIn(Compile)
    */
   val metadata =
-    com.miodx.clonomap.generated.metadata.basespace2S3
+    globalConfig.baseSpace2S3Metadata//com.miodx.clonomap.generated.metadata.basespace2S3
 
   /**
    * Define the map between data resource and its associated content. In this
@@ -97,13 +108,14 @@ object loquat {
     /**
      * The IAM role that the machines will be launched with. This is used, for
      * example, for having direct access to S3.
+     * NB! This is not role name. It's instance profile name.
      */
     val iamRoleName =
-      "era7-projects"
+      globalConfig.iamInstanceProfileName // iamRoleName
 
     /** Base S3 directory where the Loquat logs will be uploaded */
     val logsS3Prefix =
-      S3Folder("resources.ohnosequences.com", "b2s3")
+      S3Folder(globalConfig.s3bucket, "b2s3")
 
     /** The manager configuration (defined below) */
     val managerConfig =
@@ -172,13 +184,14 @@ object loquat {
   // loquat user
   ////////////////////////////////////////////////////////////////////
    val me = LoquatUser(
-      email             = "eparejatobes@ohnosequences.com",
+      email             = "zhizhelev@primetalk.ru",
       localCredentials  =
         new AWSCredentialsProviderChain(
+          new EC2ContainerCredentialsProviderWrapper(),
           new InstanceProfileCredentialsProvider(false),
           new ProfileCredentialsProvider("default")
         ),
-      keypairName       = "miodx-dev"
+      keypairName       = globalConfig.keyPairName
     )
 
 }

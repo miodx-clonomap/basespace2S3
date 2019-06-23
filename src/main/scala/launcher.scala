@@ -6,6 +6,7 @@ import scala.util.{ Try, Failure }
 import scala.concurrent.duration._
 import java.util.concurrent.ScheduledFuture
 import java.nio.file.Files
+import scala.language.existentials
 
 /**
  * Launcher-specific functions, including the most important one:
@@ -28,7 +29,7 @@ case object launcher extends LazyLogging {
    * @param monitoringInterval is the duration between consecutive monitorings
    *
    * @return a scheduled future that resolves to the result of the Loquat
-   * rocess, all wrapped in a Try that is successfull if the resources can be
+   * process, all wrapped in a Try that is successfull if the resources can be
    * successfully prepared and the manager local instructions can be
    * successfully run.
    */
@@ -47,6 +48,7 @@ case object launcher extends LazyLogging {
     LoquatOps.check(config, user, dataProcessing, dataMappings) match {
       case Left(msg) => Failure(new java.util.prefs.InvalidPreferencesFormatException(msg))
       case Right(aws) => {
+        logger.info("Obtained AWS clients")
         // executing a chain of steps that prepare AWS resources
         val resourcesPrepared: Try[_] =
           LoquatOps.prepareResourcesSteps(config, user, aws)
@@ -56,12 +58,17 @@ case object launcher extends LazyLogging {
               result.flatMap(_ => next.execute)
             }
 
+        logger.info("resourcesPrepared: " + resourcesPrepared.toString)
+
         resourcesPrepared.flatMap { _ =>
           // if the resource are ready, launching manager locally
-          resultToTry(
-            manager.localInstructions(user).run(localTmpDir)
-          )
+          val result = manager.localInstructions(user).run(localTmpDir)
+          logger.info("result of launching manager locally: " + result.toString)
+
+          resultToTry(result)
         }.map { _ =>
+          logger.info("everything went fine so far: ")
+
           // and finally if everything went fine so far, returning a ScheduledFuture with the termination monitor
           TerminationDaemonBundle(
             config,
