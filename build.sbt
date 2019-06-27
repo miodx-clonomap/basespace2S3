@@ -19,7 +19,8 @@ dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core"  % "jackson-databind"      % "2.7.8",
   "org.slf4j"                   % "slf4j-api"             % "1.7.25",
   "commons-logging"             % "commons-logging"       % "1.2",
-  "org.scala-lang.modules"      %% "scala-xml"            % "1.0.5"
+  "org.scala-lang.modules"      %% "scala-xml"            % "1.0.5",
+  "com.miodx.clonomap"          %% "aws-statika"          % "2.1.0-SNAPSHOT"
 )
 
 // Uncomment if you need to deploy this project as a Statika bundle:
